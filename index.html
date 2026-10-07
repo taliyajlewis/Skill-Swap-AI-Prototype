@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skill Swap: clickable prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+  /* Brand */
+  --red:#E43D4C; --blue:#47B4E3; --green:#768C2B; --orange:#F28706;
+  /* Action roles. Brand red is deepened one step so white text clears 4.5:1;
+     brand blue is used as-is with near-black text (7.7:1). */
+  --primary:#C92F3E; --primary-hover:#AD2633; --primary-active:#8E1F2A; --primary-text:#B92A38;
+  --secondary:#47B4E3; --secondary-hover:#2FA2D4; --secondary-active:#1E8DBD; --secondary-text:#161616;
+  --page:#e8e8e8; --frame:#c6c6c6;
+  --bg:#ffffff; --layer:#f4f4f4; --layer-hover:#e8e8e8; --layer2:#ffffff;
+  --border:#e0e0e0; --border-strong:#8d8d8d;
+  --text:#161616; --text2:#525252; --text3:#6f6f6f; --placeholder:#6f6f6f;
+  --field:#f4f4f4; --focus:#161616; --link:#12658A;
+  --switch-on:#47B4E3; --switch-on-text:#161616;
+  --disabled:#e0e0e0; --disabled-text:#525252;
+  --inverse:#393939; --inverse-text:#f4f4f4;
+  --error:#da1e28; --error-text:#a2191f; --error-bg:#fff1f1;
+  --success:#24a148; --success-bg:#defbe6;
+  --logo-bg:#f4f4f4;
+  --tag-green-bg:#eaf0d6; --tag-green:#2f3a0d;
+  --tag-blue-bg:#d9f0fa; --tag-blue:#0b4d6b;
+  --tag-orange-bg:#fde7cc; --tag-orange:#6b3700;
+  --tag-gray-bg:#e0e0e0; --tag-gray:#161616;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;background:var(--page)}
+body{margin:0;min-height:100%;background:var(--page);color:var(--text);
+  font-family:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-size:14px;line-height:20px;letter-spacing:.16px;-webkit-font-smoothing:antialiased;
+  display:flex;gap:32px;justify-content:center;align-items:flex-start;padding:24px}
+button,input,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer}
+p{margin:0}
+a{color:var(--link)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:-3px;box-shadow:inset 0 0 0 5px #fff}
+input[type=checkbox]:focus-visible,input[type=radio]:focus-visible{outline:none;box-shadow:none}
+.choice:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:-3px}
+.chip:focus-visible{box-shadow:none}
+.chip:focus-visible>span{box-shadow:0 0 0 2px #fff,0 0 0 5px var(--focus)}
+h1:focus,h2:focus,.main:focus{outline:none;box-shadow:none}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Device */
+.device{position:relative;width:390px;max-width:100%;height:min(844px,calc(100vh - 48px));
+  background:var(--bg);border:1px solid var(--frame);border-radius:20px;overflow:hidden;flex:none;
+  box-shadow:0 8px 32px rgba(0,0,0,.16)}
+#app{position:absolute;inset:0;display:flex;flex-direction:column}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;outline:none;overscroll-behavior:contain}
+.pad{padding:24px 16px 16px}
+
+/* Type (Carbon productive scale) */
+.h1{font-size:28px;line-height:36px;font-weight:400;margin:0 0 8px;letter-spacing:0}
+.h2{font-size:20px;line-height:28px;font-weight:600;margin:0}
+.h3{font-size:16px;line-height:22px;font-weight:600;margin:0;display:block}
+.lead{color:var(--text2);margin:0 0 24px}
+.meta{display:block;color:var(--text2);font-size:12px;line-height:16px;letter-spacing:.32px}
+.label{display:block;font-size:12px;line-height:16px;letter-spacing:.32px;color:var(--text2);margin-bottom:4px}
+.section-title{font-size:14px;line-height:18px;font-weight:600;margin:24px 0 8px}
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mt24{margin-top:24px}
+
+/* Header */
+.hdr{flex:none;height:56px;display:flex;align-items:center;gap:8px;padding:0 4px 0 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+.hdr.back{padding-left:4px}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.wordmark{font-weight:600;font-size:20px;letter-spacing:0}
+.wm-r{color:var(--red)}.wm-b{color:var(--blue)}
+.hdr-title{flex:1;min-width:0;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-title.two{display:flex;flex-direction:column;line-height:20px}
+.hdr-title.two .meta{font-weight:400}
+.icon-btn{width:48px;height:48px;flex:none;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;color:var(--text);padding:0}
+.icon-btn:hover{background:var(--layer-hover)}
+.icon-btn svg{width:24px;height:24px}
+
+/* Progress indicator */
+.progress{flex:none;list-style:none;margin:0;padding:12px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:var(--bg);border-bottom:1px solid var(--border)}
+.progress li{border-top:2px solid var(--border-strong);padding-top:8px;display:flex;align-items:center;gap:6px;font-size:12px;letter-spacing:.32px;color:var(--text2)}
+.progress li.done,.progress li.cur{border-top-color:var(--primary);color:var(--text)}
+.progress li.cur{font-weight:600}
+.p-dot{width:16px;height:16px;border-radius:50%;border:1px solid var(--text2);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.cur .p-dot{border:2px solid var(--primary);background:var(--primary);box-shadow:inset 0 0 0 3px var(--bg)}
+.done .p-dot{background:var(--primary);border-color:var(--primary);color:#fff}
+.p-dot svg{width:12px;height:12px}
+
+/* Buttons */
+.btn{min-height:48px;width:100%;padding:0 16px;border:0;border-radius:0;display:inline-flex;align-items:center;justify-content:space-between;gap:16px;font-size:16px;font-weight:500;text-align:left;text-decoration:none}
+.btn svg{width:20px;height:20px;flex:none}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-primary:active{background:var(--primary-active)}
+.btn-secondary{background:var(--secondary);color:var(--secondary-text)}
+.btn-secondary:hover{background:var(--secondary-hover)}
+.btn-secondary:active{background:var(--secondary-active)}
+.btn-tertiary{background:transparent;color:var(--primary-text);box-shadow:inset 0 0 0 1px var(--primary-text)}
+.btn-tertiary:hover{background:var(--primary);color:#fff}
+.btn-ghost{background:transparent;color:var(--link)}
+.btn-ghost:hover{background:var(--layer-hover)}
+.btn:disabled{background:var(--disabled);color:var(--disabled-text);cursor:not-allowed;box-shadow:none}
+.btn[aria-busy="true"]{background:var(--primary);color:#fff;opacity:.85;cursor:progress}
+.btn.inline{width:auto;padding:0 12px;margin-left:-12px}
+.btn-set{display:flex}
+.btn-set .btn{flex:1;width:auto}
+.stack{display:flex;flex-direction:column;gap:8px;padding:8px 16px 32px}
+.footer{flex:none;background:var(--bg);border-top:1px solid var(--border)}
+.footer .btn{min-height:56px}
+
+/* Fields */
+.field{margin-bottom:24px}
+.field>label{display:block;font-size:12px;line-height:16px;letter-spacing:.32px;color:var(--text2);margin-bottom:8px}
+.input-wrap{position:relative}
+.input{width:100%;height:48px;padding:0 16px;background:var(--field);border:0;border-bottom:1px solid var(--border-strong);border-radius:0;font-size:16px}
+textarea.input{height:auto;min-height:96px;padding:13px 16px;resize:vertical;line-height:22px;display:block}
+.input::placeholder,.composer textarea::placeholder{color:var(--placeholder)}
+.field.invalid .input,.add-row.invalid .input{outline:2px solid var(--error);outline-offset:-2px}
+.has-toggle .input{padding-right:96px}
+.inv-ic{position:absolute;right:14px;top:14px;width:20px;height:20px;color:var(--error)}
+.has-toggle .inv-ic{right:52px}
+.pw-toggle{position:absolute;right:0;top:0}
+.helper{font-size:12px;line-height:16px;letter-spacing:.32px;color:var(--text2);margin-top:8px}
+.helper.err{color:var(--error-text)}
+.choice{display:flex;align-items:center;gap:12px;min-height:48px;cursor:pointer}
+.choice input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--primary)}
+.choice:hover{background:var(--layer)}
+fieldset{border:0;margin:0 0 24px;padding:0}
+legend{padding:0;margin-bottom:4px}
+
+/* Tabs and content switcher */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin:0 0 24px}
+.tab{flex:1;min-height:48px;background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;font-size:16px;color:var(--text2);text-align:left;padding:0 16px}
+.tab:hover{color:var(--text);background:var(--layer)}
+.tab[aria-selected="true"]{border-bottom-color:var(--primary);color:var(--text);font-weight:600}
+.switcher{display:flex;margin:16px 16px 0;box-shadow:inset 0 0 0 1px var(--border-strong)}
+.switcher button{flex:1;min-height:48px;border:0;background:transparent;font-size:14px;color:var(--text2)}
+.switcher button:hover{background:var(--layer)}
+.switcher button[aria-selected="true"]{background:var(--switch-on);color:var(--switch-on-text);font-weight:500}
+
+/* Tags, chips, avatars */
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:12px;font-size:12px;letter-spacing:.32px;font-weight:500;white-space:nowrap;flex:none}
+.tag-green{background:var(--tag-green-bg);color:var(--tag-green)}
+.tag-blue{background:var(--tag-blue-bg);color:var(--tag-blue)}
+.tag-orange{background:var(--tag-orange-bg);color:var(--tag-orange)}
+.tag-gray{background:var(--tag-gray-bg);color:var(--tag-gray)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.chips{display:flex;flex-wrap:wrap;column-gap:8px}
+.chip{min-height:48px;display:inline-flex;align-items:center;background:none;border:0;padding:0}
+.chip>span{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:18px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--border-strong);font-size:14px}
+.chip:hover>span{background:var(--layer-hover)}
+.chip.on>span{background:var(--tag-blue-bg);color:var(--tag-blue);box-shadow:none}
+.chip svg{width:16px;height:16px}
+.avatar{--s:40px;width:var(--s);height:var(--s);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:calc(var(--s) * .36);flex:none;letter-spacing:0}
+.av-red{background:#C92F3E;color:#fff}.av-blue{background:#47B4E3;color:#161616}
+.av-green{background:#768C2B;color:#161616}.av-orange{background:#F28706;color:#161616}
+.person-row{display:flex;align-items:center;gap:12px;margin:16px 0}
+.person-row strong{display:block;font-weight:600}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+/* Welcome */
+.hero{background:linear-gradient(170deg,#1B78A3 0%,#6E5A86 52%,#C92F3E 100%);color:#fff;padding:56px 24px 32px}
+.hero h1{font-size:42px;line-height:50px;font-weight:600;margin:24px 0 4px;letter-spacing:-.5px}
+.hero p{font-size:18px;line-height:26px}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:0}
+.steps strong{display:block;font-size:16px;line-height:22px;font-weight:600;margin-bottom:2px}
+.steps p{color:var(--text2)}
+.step-n{width:32px;height:32px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:600}
+.n1{background:#C92F3E;color:#fff}.n2{background:#47B4E3;color:#161616}.n3{background:#768C2B;color:#161616}
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text2);font-size:12px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* Match cards: the swap pair is the signature element */
+.card{background:var(--layer);margin:0 16px 16px}
+.card-head{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 4px 12px 16px;background:none;border:0;text-align:left}
+.card-head:hover{background:var(--layer-hover)}
+.card-head .chev{width:20px;height:20px;color:var(--text2);flex:none;margin-right:8px}
+.who{flex:1;min-width:0}
+.who strong{display:block;font-size:16px;line-height:22px;font-weight:600}
+.swap-pair{display:grid;grid-template-columns:1fr 36px 1fr;align-items:stretch;margin:0 16px;background:var(--layer2)}
+.swap-pair .side{padding:12px;position:relative}
+.swap-pair .side::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+.swap-pair .side.learn::before{background:var(--blue)}
+.swap-pair .side.teach{padding-left:12px}
+.swap-pair .side.teach::before{left:auto;right:0;background:var(--red)}
+.swap-pair .side.learn{padding-left:16px}
+.swap-pair strong{display:block;font-size:18px;line-height:24px;font-weight:600}
+.swap-pair .mid{display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.swap-pair .mid svg{width:22px;height:22px}
+.pad .swap-pair{margin:0}
+.opener{margin:16px 16px 16px;padding-left:12px;border-left:3px solid var(--border-strong)}
+.opener p{margin-top:4px}
+.pad .opener{margin:24px 0 0}
+.hint{color:var(--text2);margin-top:8px}
+.caught{display:flex;gap:12px;margin:8px 16px 32px;padding:16px 0;border-top:1px solid var(--border);color:var(--text2)}
+.caught svg{width:20px;height:20px;flex:none;color:var(--green)}
+.caught strong{display:block;color:var(--text);font-weight:600}
+.circle-card{display:flex;flex-direction:column;align-items:stretch;gap:8px;width:calc(100% - 32px);padding:16px;border:0;text-align:left}
+.circle-card:hover{background:var(--layer-hover)}
+.next{display:flex;align-items:center;gap:8px;color:var(--text)}
+.next svg{width:18px;height:18px;color:var(--text2)}
+
+/* Lists, tiles, sessions */
+.list{list-style:none;margin:0;padding:0}
+.list-row{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 16px;background:none;border:0;border-bottom:1px solid var(--border);text-align:left}
+.list-row:hover{background:var(--layer)}
+.preview{display:block;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.end{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--primary)}
+.group{margin-bottom:8px}
+.group-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin:0 16px 8px}
+.count{font-weight:400;color:var(--text2)}
+.tile{display:flex;flex-direction:column;gap:12px;background:var(--layer);margin:0 16px 16px;padding:16px}
+.tile .person-row{margin:0}
+.tile .btn-set,.tile>.btn{margin:4px -16px -16px;width:calc(100% + 32px)}
+.tile>.btn-ghost{margin-top:-4px}
+.mini-pair{display:grid;grid-template-columns:1fr 24px 1fr;align-items:center;gap:8px;font-weight:600}
+.mini-pair svg{width:20px;height:20px;color:var(--text2)}
+.inline-empty{margin:0 16px 16px;padding:16px;color:var(--text2);box-shadow:inset 0 0 0 1px var(--border)}
+.facts{list-style:none;margin:16px 0 0;padding:0}
+.facts li{display:flex;align-items:center;gap:10px;min-height:32px}
+.facts svg,.sess-list svg{width:20px;height:20px;color:var(--text2);flex:none}
+.sess-list{list-style:none;margin:0;padding:0}
+.sess-list li{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.sess-list strong{display:block;font-weight:600}
+
+/* Empty states */
+.empty{padding:40px 24px 24px;display:flex;flex-direction:column;align-items:flex-start}
+.empty .h2{margin:16px 0 8px}
+.empty .lead{margin-bottom:24px}
+.empty-art{width:120px;height:80px}
+.empty.small{padding:16px;background:var(--layer)}
+.empty.small .empty-art{width:84px;height:56px}
+.empty.small .h3{margin:8px 0 4px}
+
+/* Notifications */
+.notif{display:flex;gap:12px;padding:12px 0 12px 13px;border-left:3px solid}
+.notif.error{border-color:var(--error);background:var(--error-bg)}
+.notif.success{border-color:var(--success);background:var(--success-bg)}
+.n-ic{width:20px;height:20px;flex:none;margin-top:2px}
+.notif.error .n-ic{color:var(--error)}.notif.success .n-ic{color:var(--success)}
+.notif-body{flex:1;padding-right:12px}
+.notif-title{font-weight:600}
+.notif .icon-btn{margin:-12px 0 -12px}
+
+/* Bottom navigation */
+.nav{flex:none;display:flex;height:64px;background:var(--bg);border-top:1px solid var(--border)}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:0;border-top:3px solid transparent;margin-top:-1px;color:var(--text2);font-size:12px;letter-spacing:.32px;position:relative}
+.nav button:hover{background:var(--layer)}
+.nav button[aria-current="page"]{color:var(--text);border-top-color:var(--blue);background:#eef8fc;font-weight:600}
+.nav svg{width:24px;height:24px}
+.badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--primary);color:#fff;font-size:11px;line-height:18px;font-weight:600;letter-spacing:0}
+
+/* Chat */
+.msgs{padding:16px;display:flex;flex-direction:column;gap:4px}
+.bubble{max-width:82%;padding:10px 14px;margin-top:8px}
+.bubble.me{align-self:flex-end;background:var(--primary);color:#fff}
+.bubble.them{align-self:flex-start;background:var(--layer)}
+.stamp{font-size:11px;color:var(--text3);letter-spacing:.32px}
+.stamp.me{align-self:flex-end}
+.sys{display:flex;gap:10px;padding:12px;margin:8px 0;box-shadow:inset 0 0 0 1px var(--border)}
+.sys svg{width:20px;height:20px;flex:none;color:var(--text2)}
+.sys strong{display:block;font-weight:600}
+.typing{margin-top:8px}
+.chat-empty{padding:32px 16px 16px;display:flex;flex-direction:column;align-items:flex-start}
+.chat-empty .h2{margin:16px 0 4px}
+.chat-empty .lead{margin-bottom:16px}
+.starter{display:block;width:100%;min-height:48px;padding:12px 16px;margin-bottom:8px;background:var(--layer);border:0;border-left:3px solid var(--blue);text-align:left;line-height:20px}
+.starter:hover{background:var(--layer-hover)}
+.composer{flex:none;display:flex;align-items:flex-end;gap:8px;padding:8px 8px 8px 16px;border-top:1px solid var(--border);background:var(--bg)}
+.composer textarea{flex:1;min-height:48px;max-height:120px;resize:none;padding:13px 16px;background:var(--field);border:0;border-bottom:1px solid var(--border-strong);border-radius:0;font-size:16px;line-height:22px}
+.send{width:56px;height:48px;flex:none;border:0;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center}
+.send:hover{background:var(--primary-hover)}
+.send svg{width:22px;height:22px}
+
+/* Setup: skills */
+.skill-block{margin-bottom:32px}
+.skill-block .meta{margin:4px 0 12px}
+.add-row{display:flex}
+.add-row .input{flex:1}
+.btn-add{width:48px;height:48px;flex:none;border:0;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center}
+.btn-add:hover{background:var(--primary-hover)}
+.btn-add svg{width:22px;height:22px}
+.skill-block .chips{margin-top:8px}
+.skill-block .label{margin-top:12px}
+
+/* Profile */
+.banner{height:96px;background:var(--blue)}
+.prof{padding-top:0}
+.prof .avatar{margin-top:-40px;box-shadow:0 0 0 4px var(--bg)}
+.prof .h2{margin-top:12px}
+.prof>p{margin-top:12px}
+
+/* Sheet and toast */
+.scrim{position:absolute;inset:0;z-index:20;background:rgba(22,22,22,.55);display:flex;align-items:flex-end;animation:fade .15s ease-out}
+.sheet{width:100%;max-height:90%;overflow:auto;background:var(--bg);animation:rise .24s cubic-bezier(0,0,.38,.9)}
+.sheet-hd{display:flex;align-items:flex-start;gap:8px;padding:20px 4px 0 16px}
+.sheet-hd .h2{flex:1;padding-top:8px}
+.sheet-bd{padding:8px 16px 16px}
+.sheet-ft{position:sticky;bottom:0;background:var(--bg)}
+.sheet-ft .btn{min-height:56px}
+.toast{position:absolute;left:16px;right:16px;bottom:80px;z-index:30;background:var(--inverse);color:var(--inverse-text);padding:14px 16px;display:flex;align-items:center;gap:12px;border-left:3px solid var(--success);box-shadow:0 2px 8px rgba(0,0,0,.3);animation:fade .15s ease-out}
+.toast svg{width:20px;height:20px;flex:none;color:var(--success)}
+.spin{animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{transform:translateY(24px);opacity:.4}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* Prototype controls (outside the app) */
+.controls{width:280px;flex:none;background:var(--bg);border:1px solid var(--border);padding:16px;max-height:calc(100vh - 48px);overflow:auto}
+.controls h2{font-size:16px;font-weight:600;margin:0 0 4px}
+.ctl-h{font-size:12px;letter-spacing:.32px;color:var(--text2);font-weight:600;margin:20px 0 8px}
+.jump{display:block;width:100%;min-height:44px;padding:0 12px;text-align:left;background:none;border:0;border-left:3px solid transparent;color:var(--text2)}
+.jump:hover{background:var(--layer);color:var(--text)}
+.jump.on{border-left-color:var(--primary);background:var(--layer);color:var(--text);font-weight:600}
+.controls .btn{margin-top:8px;font-size:14px}
+
+@media (max-width: 720px){
+  body{padding:0;flex-direction:column;align-items:stretch;gap:0}
+  .device{width:100%;height:100vh;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border:0;border-radius:0;box-shadow:none}
+  .controls{width:auto;max-height:none;border:0;border-top:8px solid var(--page)}
+}
+</style>
+</head>
+<body>
+<div class="device"><div id="app"></div></div>
+
+<aside class="controls" aria-label="Prototype controls">
+  <h2>Prototype controls</h2>
+  <p class="meta">Outside the app. Jump between screens or force states during testing.</p>
+  <h3 class="ctl-h">Screens, in flow order</h3>
+  <div id="jumps"></div>
+  <h3 class="ctl-h">States</h3>
+  <label class="choice"><input type="checkbox" id="ctl-fail" checked> Fail the first circle join</label>
+  <button class="btn btn-secondary" data-ctl="empty">Show empty sessions</button>
+  <button class="btn btn-tertiary" data-ctl="sample">Load sample data</button>
+  <button class="btn btn-ghost" data-ctl="reset">Restart from welcome</button>
+</aside>
+
+<script>
+/* ---------- Icons (24px, Carbon-like line weight) ---------- */
+const P={
+  home:'<path d="M3.5 11 12 4l8.5 7v9.5H15v-6H9v6H3.5z"/>',
+  swap:'<path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4"/>',
+  chat:'<path d="M4 5h16v11H10l-6 4z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  close:'<path d="M6 6l12 12M18 6 6 18"/>',
+  back:'<path d="M20 12H5M11 6l-6 6 6 6"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  chev:'<path d="M9 6l6 6-6 6"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  warn:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6.5M12 16.5v.5"/>',
+  ok:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
+  cal:'<rect x="3.5" y="5" width="17" height="15.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  pin:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+  send:'<path d="M4 12 20 4l-4 16-4.5-6.5zM11.5 13.5 20 4"/>',
+  group:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.7-3.5 3.3-5.5 6.5-5.5s5.8 2 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c2 .8 3.2 2.6 3.6 5.2"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'
+};
+const ic=(n,c='')=>`<svg class="${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" aria-hidden="true" focusable="false">${P[n]}</svg>`;
+const spinner=`<svg class="spin" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="36 14"/></svg>`;
+const logo=(s=36,bg='var(--logo-bg)')=>`<svg width="${s}" height="${s}" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="${bg}"/><path d="M8.5 19C11 10.5 21 7.5 28 11.5" stroke="#E43D4C" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M25 6.5 33 12.5 24.5 16z" fill="#E43D4C"/><path d="M31.5 21C29 29.5 19 32.5 12 28.5" stroke="#47B4E3" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M15 33.5 7 27.5 15.5 24z" fill="#47B4E3"/></svg>`;
+const emptyArt=`<svg class="empty-art" viewBox="0 0 120 80" aria-hidden="true"><circle cx="34" cy="40" r="22" fill="none" stroke="var(--border-strong)" stroke-width="2" stroke-dasharray="4 4"/><circle cx="86" cy="40" r="22" fill="none" stroke="var(--border-strong)" stroke-width="2" stroke-dasharray="4 4"/><path d="M47 31h25M66 26l6 5-6 5" stroke="#E43D4C" stroke-width="2.5" fill="none"/><path d="M73 49H48M54 44l-6 5 6 5" stroke="#47B4E3" stroke-width="2.5" fill="none"/></svg>`;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const first=n=>String(n||'').trim().split(/\s+/)[0]||'';
+const initials=n=>String(n||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const avatar=(p,s=40)=>`<span class="avatar av-${p.color||'red'}" style="--s:${s}px" aria-hidden="true">${esc(p.initials||initials(p.name))}</span>`;
+const tag=(t,c)=>`<span class="tag tag-${c}">${esc(t)}</span>`;
+
+/* ---------- Data ---------- */
+const PEOPLE={
+  madison:{id:'madison',name:'Madison Green',initials:'MG',color:'red',role:'Home chef',dist:'2.3 mi away',teaches:['Cooking','Pasta making'],wants:['Photography'],
+    bio:"I've made homemade pasta for my family and friends for years and would love to share my techniques. If anyone knows photography, let's swap.",
+    opener:"Hi Madison! What dish would you teach first? I could show you how to light food so your pasta looks as good on camera as it tastes.",
+    avail:'Weekend mornings',reply:"Yes! Saturday morning works. Bring your camera, we're making tagliatelle."},
+  jamal:{id:'jamal',name:'Jamal Kay',initials:'JK',color:'orange',role:'Software engineer',dist:'3 mi away',teaches:['Spanish','Coding'],wants:['Sports photography'],
+    bio:"I shoot my rec league games on my phone and want to level up. Fluent in Spanish and happy to practice with beginners.",
+    opener:"Hi Jamal! What sport do you shoot most? I can share settings for fast action, and I'd love to practice my Spanish.",
+    avail:'Tuesday evenings',reply:"Love that. Tuesday evenings work best for me. ¡Gracias!"},
+  harper:{id:'harper',name:'Harper Allen',initials:'HA',color:'green',role:'Web developer',dist:'2.3 mi away',teaches:['Web development','HTML and CSS'],wants:['Videography','Graphic design'],
+    bio:"I've been a web developer for 6 years and love helping people get started. I've always wanted to make proper videos for my projects.",
+    opener:"Hi Harper! What kind of videos do you want to make? I'm curious how you got into web development, too.",
+    avail:'Weeknights',reply:"Sounds great, see you Friday at 6."},
+  alexia:{id:'alexia',name:'Alexia Ruiz',initials:'AR',color:'blue',role:'Line cook',dist:'4 mi away',teaches:['Cooking'],wants:['Video editing'],
+    bio:'Line cook who wants to start a cooking channel.',opener:'',avail:'Saturdays',reply:"Thank you! See you Saturday."}
+};
+const MATCH_IDS=['madison','jamal','harper'];
+const CIRCLES=[
+  {id:'pasta',name:'Pasta Making Group Session',host:'madison',skill:'Cooking',where:"Madison's kitchen, Raleigh",spots:'3 of 6 spots filled',
+   desc:"I've made homemade pasta for years and would love to host a small group in my test kitchen. We'll cover dough, shapes and two simple sauces.",
+   sessions:[{when:'Tomorrow, 4:30 PM',title:'Fresh pasta basics'},{when:'Sat, Oct 17, 4:30 PM',title:'Filled pasta: ravioli'}]},
+  {id:'spanish',name:'Beginner Spanish Circle',host:'jamal',skill:'Spanish',where:'Video call',spots:'2 of 8 spots filled',
+   desc:"Casual conversation practice for total beginners. We'll pick a regular time once a few more people join.",sessions:[]}
+];
+const POPULAR={teach:['Photography','Videography','Cooking','Guitar','Coding','Spanish'],learn:['Cooking','Spanish','Piano','French','Photography','Coding']};
+
+const words=s=>s.toLowerCase().split(/[^a-z]+/).filter(w=>w.length>3&&!['making','basics'].includes(w));
+function fuzzy(a,b){const x=a.toLowerCase().trim(),y=b.toLowerCase().trim();if(x===y||x.includes(y)||y.includes(x))return true;const wb=words(b);return words(a).some(w=>wb.includes(w));}
+function pairOf(id){
+  const m=PEOPLE[id],u=S.user;
+  const learn=m.teaches.filter(t=>u.learn.some(l=>fuzzy(t,l)));
+  const teach=u.teach.filter(t=>m.wants.some(w=>fuzzy(t,w)));
+  return {learn:learn[0]||m.teaches[0],teach:teach[0]||u.teach[0]||'your skill',strong:!!(learn.length&&teach.length),score:(learn.length?1:0)+(teach.length?1:0)};
+}
+
+/* ---------- State ---------- */
+function init(){return{
+  screen:'welcome',stack:[],user:null,authTab:'register',showPw:false,
+  form:{name:'',email:'',password:'',agree:false},errors:{},
+  setup:{name:'',location:'',bio:'',teach:[],learn:[],lookingFor:['Friendship'],format:'Either',distance:'Within 10 miles'},
+  skillIn:{teach:'',learn:''},editMode:false,
+  sessions:[],threads:{},unread:{},replied:{},typing:null,
+  homeTab:'matches',activeMatch:'madison',activeThread:'madison',activeCircle:'pasta',
+  joinAttempts:{},joinState:{},draft:'',sheet:null,propose:null,_openers:[]
+};}
+let S=init();
+let failJoin=true;
+
+function loadSample(){
+  S.user={name:'Joseph Moore',handle:'jmoore',location:'Raleigh, NC',bio:'Camera lover with a passion for cooking but lacking the skills. Let’s connect!',
+    teach:['Videography','Photography','Music production'],learn:['Cooking','Spanish'],lookingFor:['Friendship','Community'],format:'Either',distance:'Within 10 miles'};
+  S.sessions=[
+    {id:'s1',partner:'madison',kind:'swap',status:'upcoming',youTeach:'Photography',youLearn:'Cooking',when:'Today, 3:30 PM',where:"Madison's kitchen"},
+    {id:'s2',partner:'alexia',kind:'swap',status:'request',youTeach:'Video editing',youLearn:'Cooking',when:'Sat, 11:00 AM',where:'Video call'},
+    {id:'s3',partner:'jamal',kind:'swap',status:'sent',youTeach:'Photography',youLearn:'Spanish',when:'Next week',where:'In person'}
+  ];
+  S.threads={
+    madison:[{from:'them',text:'Hey! When would you like to have our first session?',t:'10:42 AM'}],
+    harper:[{from:'me',text:'Would Friday work for a first session?',t:'Yesterday'},{from:'them',text:"I'm free this Friday at 6.",t:'Yesterday'}]
+  };
+  S.unread={madison:1};S.replied={madison:false,harper:true};
+}
+
+/* ---------- Shell pieces ---------- */
+const hdrMain=()=>`<header class="hdr"><div class="brand">${logo(36)}<span class="wordmark"><span class="wm-r">Skill</span> <span class="wm-b">Swap</span></span></div><button class="icon-btn" data-act="explainer" aria-label="How a swap works">${ic('info')}</button></header>`;
+const hdrBack=(t,extra='')=>`<header class="hdr back"><button class="icon-btn" data-act="back" aria-label="Back">${ic('back')}</button><span class="hdr-title">${esc(t)}</span>${extra}</header>`;
+function progress(step){
+  const L=['Profile','Skills','Preferences'];
+  return `<ol class="progress" aria-label="Setup progress">${L.map((l,i)=>{const n=i+1,c=n<step?'done':n===step?'cur':'';return `<li class="${c}" ${n===step?'aria-current="step"':''}><span class="p-dot">${n<step?ic('check'):''}</span>${l}<span class="sr-only">${n<step?', complete':n===step?', current':''}</span></li>`}).join('')}</ol>`;
+}
+function nav(active){
+  const unread=Object.values(S.unread).reduce((a,b)=>a+(b||0),0);
+  const reqs=S.sessions.filter(s=>s.status==='request').length;
+  const items=[['home','home','Home',0],['swaps','swap','Swaps',reqs],['messages','chat','Messages',unread],['profile','user','Profile',0]];
+  return `<nav class="nav" aria-label="Main">${items.map(([k,i,l,b])=>`<button data-act="tab" data-arg="${k}" ${active===k?'aria-current="page"':''}>${ic(i)}<span>${l}</span>${b?`<span class="badge" aria-label="${b} new">${b}</span>`:''}</button>`).join('')}</nav>`;
+}
+function field(o){
+  const inv=!!o.err,hid=o.id+'-h';
+  const common=`id="${o.id}" data-bind="${o.bind}" placeholder="${esc(o.ph||'')}" ${inv?'aria-invalid="true"':''} aria-describedby="${hid}"`;
+  const ctrl=o.textarea?`<textarea class="input" ${common} ${o.max?`maxlength="${o.max}"`:''}>${esc(o.value)}</textarea>`
+    :`<input class="input" type="${o.type||'text'}" value="${esc(o.value)}" ${common} ${o.auto?`autocomplete="${o.auto}"`:''}>`;
+  return `<div class="field ${inv?'invalid':''} ${o.cls||''}"><label for="${o.id}">${o.label}</label><div class="input-wrap">${ctrl}${inv?ic('warn','inv-ic'):''}${o.after||''}</div>${inv?`<p class="helper err" id="${hid}">${o.err}</p>`:o.help?`<p class="helper" id="${hid}">${o.help}</p>`:''}${o.below||''}</div>`;
+}
+const emptyState=(title,body,cta,act)=>`<div class="empty">${emptyArt}<h1 class="h2">${title}</h1><p class="lead">${body}</p><button class="btn btn-primary" data-act="${act}">${cta} ${ic('chev')}</button></div>`;
+
+/* ---------- Screens ---------- */
+const SCREENS={
+  welcome:{body:()=>`<div class="hero">${logo(72,'#ffffff')}<h1>Skill Swap</h1><p>Share. Learn. Connect.</p></div>
+    <div class="pad"><h2 class="h2" style="margin-bottom:4px">How a swap works</h2>
+    <ol class="steps">
+      <li><span class="step-n n1">1</span><div><strong>You teach</strong><p>Share something you already know, like photography.</p></div></li>
+      <li><span class="step-n n2">2</span><div><strong>They teach you back</strong><p>Your match shares something you want to learn, like cooking.</p></div></li>
+      <li><span class="step-n n3">3</span><div><strong>You both grow</strong><p>No money changes hands. Just time, skills and a new connection.</p></div></li>
+    </ol></div>
+    <div class="stack"><button class="btn btn-primary" data-act="start">Get started ${ic('chev')}</button><button class="btn btn-ghost" data-act="haveAccount">I already have an account</button></div>`},
+
+  register:{header:()=>hdrBack(''),body:registerBody},
+  setup1:{header:()=>hdrBack('Create your profile')+progress(1),body:setup1Body,
+    footer:()=>`<div class="footer btn-set"><button class="btn btn-secondary" data-act="back">Back</button><button class="btn btn-primary" data-act="next1">Continue ${ic('chev')}</button></div>`},
+  setup2:{header:()=>S.editMode?hdrBack('Edit skills'):hdrBack('Create your profile')+progress(2),body:setup2Body,
+    footer:()=>`<div class="footer btn-set"><button class="btn btn-secondary" data-act="back">${S.editMode?'Cancel':'Back'}</button><button class="btn btn-primary" data-act="next2">${S.editMode?'Save skills':'Continue'} ${ic(S.editMode?'check':'chev')}</button></div>`},
+  setup3:{header:()=>hdrBack('Create your profile')+progress(3),body:setup3Body,
+    footer:()=>`<div class="footer btn-set"><button class="btn btn-secondary" data-act="back">Back</button><button class="btn btn-primary" data-act="finish">Show my matches ${ic('chev')}</button></div>`},
+
+  home:{header:hdrMain,nav:'home',body:homeBody},
+  match:{header:()=>hdrBack('Match'),nav:'home',body:matchBody,
+    footer:()=>`<div class="footer btn-set"><button class="btn btn-secondary" data-act="openChat" data-arg="${S.activeMatch}">Message</button><button class="btn btn-primary" data-act="propose" data-arg="${S.activeMatch}">Propose swap ${ic('swap')}</button></div>`},
+  chat:{header:chatHeader,body:chatBody,scrollBottom:true,
+    footer:()=>`<div class="composer"><label for="composer" class="sr-only">Message ${esc(PEOPLE[S.activeThread].name)}</label><textarea id="composer" rows="1" data-bind="draft" data-enter="send" placeholder="Message ${esc(first(PEOPLE[S.activeThread].name))}">${esc(S.draft)}</textarea><button class="send" data-act="send" aria-label="Send message">${ic('send')}</button></div>`},
+  messages:{header:hdrMain,nav:'messages',body:messagesBody},
+  swaps:{header:hdrMain,nav:'swaps',body:swapsBody},
+  circle:{header:()=>hdrBack('Skill Circle'),nav:'home',body:circleBody,footer:circleFooter},
+  profile:{header:hdrMain,nav:'profile',body:profileBody}
+};
+
+function registerBody(){
+  const t=S.authTab,e=S.errors;
+  const tabs=`<div class="tabs" role="tablist" aria-label="Account"><button class="tab" role="tab" aria-selected="${t==='register'}" data-act="authTab" data-arg="register">Create account</button><button class="tab" role="tab" aria-selected="${t==='login'}" data-act="authTab" data-arg="login">Log in</button></div>`;
+  const pw=`<button type="button" class="icon-btn pw-toggle" data-act="togglePw" aria-label="${S.showPw?'Hide':'Show'} password" aria-pressed="${S.showPw}">${ic('eye')}</button>`;
+  const intro=`<div class="pad">${logo(56)}<h1 class="h1 mt16">${t==='register'?'Join Skill Swap':'Welcome back'}</h1><p class="lead">${t==='register'?'Meet people through what you can teach and want to learn.':'Log in to see today’s matches.'}</p>${tabs}`;
+  if(t==='register') return intro+
+    field({id:'fn',label:'Full name',bind:'form.name',value:S.form.name,err:e.name,auto:'name',ph:'Jane Doe'})+
+    field({id:'em',label:'Email',type:'email',bind:'form.email',value:S.form.email,err:e.email,auto:'email',ph:'you@email.com'})+
+    field({id:'pw',label:'Password',type:S.showPw?'text':'password',bind:'form.password',value:S.form.password,err:e.password,help:'At least 8 characters.',auto:'new-password',after:pw,cls:'has-toggle'})+
+    `<label class="choice"><input type="checkbox" id="agree" data-bind="form.agree" ${S.form.agree?'checked':''} ${e.agree?'aria-invalid="true"':''}><span>I agree to the <a href="#" data-act="noop">Terms</a> and <a href="#" data-act="noop">Privacy Policy</a></span></label>${e.agree?`<p class="helper err">${e.agree}</p>`:''}
+    <div class="mt24"><button class="btn btn-primary" data-act="createAccount">Create account ${ic('chev')}</button></div>
+    <div class="divider">or</div><button class="btn btn-tertiary" data-act="google">Continue with Google</button></div>`;
+  return intro+
+    field({id:'em',label:'Email',type:'email',bind:'form.email',value:S.form.email,err:e.email,auto:'email',ph:'you@email.com'})+
+    field({id:'pw',label:'Password',type:S.showPw?'text':'password',bind:'form.password',value:S.form.password,err:e.password,auto:'current-password',after:pw,cls:'has-toggle'})+
+    `<button class="btn btn-primary" data-act="login">Log in ${ic('chev')}</button><div class="mt8"><button class="btn btn-ghost" data-act="demo">Use the demo account</button></div></div>`;
+}
+
+function setup1Body(){
+  const e=S.errors;
+  return `<div class="pad"><h1 class="h1">Tell people who you are</h1><p class="lead">Your skills lead your profile. A photo is optional and can come later.</p>`+
+    field({id:'dn',label:'Display name',bind:'setup.name',value:S.setup.name,err:e.name,auto:'name',ph:'Jane Doe'})+
+    field({id:'loc',label:'Location',bind:'setup.location',value:S.setup.location,err:e.location,ph:'City, State',auto:'address-level2',
+      help:'Used to suggest people nearby. Only your city is shown.',below:`<button class="btn btn-ghost inline mt8" data-act="useLocation">Use my current location ${ic('pin')}</button>`})+
+    field({id:'bio',label:'Short bio (optional)',bind:'setup.bio',value:S.setup.bio,textarea:true,max:160,ph:'What are you into right now?',help:'Up to 160 characters.'})+`</div>`;
+}
+function skillBlock(kind,title,hint){
+  const list=S.setup[kind],e=S.errors[kind];
+  return `<section class="skill-block" aria-labelledby="sk-${kind}"><h2 class="h3" id="sk-${kind}">${title}</h2><p class="meta">${hint}</p>
+  <div class="add-row ${e?'invalid':''}"><label for="in-${kind}" class="sr-only">Add a skill: ${title}</label><input class="input" id="in-${kind}" data-bind="skillIn.${kind}" data-enter="addSkill" data-arg="${kind}" placeholder="Type a skill, e.g. ${kind==='teach'?'Photography':'Cooking'}" value="${esc(S.skillIn[kind])}" ${e?'aria-invalid="true"':''}><button class="btn-add" data-act="addSkill" data-arg="${kind}" aria-label="Add skill">${ic('plus')}</button></div>
+  ${e?`<p class="helper err">${e}</p>`:''}
+  ${list.length?`<div class="chips" role="list">${list.map(s=>`<span role="listitem"><button class="chip on" data-act="removeSkill" data-arg="${kind}|${esc(s)}" aria-label="Remove ${esc(s)}"><span>${esc(s)} ${ic('close')}</span></button></span>`).join('')}</div>`:''}
+  <span class="label">Popular near you</span><div class="chips">${POPULAR[kind].filter(p=>!list.includes(p)).map(p=>`<button class="chip" data-act="addPopular" data-arg="${kind}|${p}" aria-label="Add ${p}"><span>${ic('plus')} ${p}</span></button>`).join('')}</div></section>`;
+}
+function setup2Body(){
+  return `<div class="pad"><h1 class="h1">${S.editMode?'Your skills':'What can you swap?'}</h1><p class="lead">Add at least one skill you can teach and one you want to learn. Matches are built from both lists.</p>
+  ${skillBlock('teach','Skills you can teach','Things you could show someone in an hour or two.')}
+  ${skillBlock('learn','Skills you want to learn','Things you’d like someone to show you.')}</div>`;
+}
+function setup3Body(){
+  const s=S.setup,e=S.errors;
+  const radios=(key,opts)=>opts.map(o=>`<label class="choice"><input type="radio" name="${key}" data-bind="setup.${key}" value="${o}" ${s[key]===o?'checked':''}>${o}</label>`).join('');
+  return `<div class="pad"><h1 class="h1">Your preferences</h1><p class="lead">This helps us pick a few strong matches instead of hundreds.</p>
+  <fieldset><legend class="h3">I’m open to</legend><p class="meta">Choose any.</p>${['Friendship','Community','Dating'].map(o=>`<label class="choice"><input type="checkbox" data-bind-arr="setup.lookingFor" value="${o}" ${s.lookingFor.includes(o)?'checked':''}>${o}</label>`).join('')}${e.lookingFor?`<p class="helper err">${e.lookingFor}</p>`:''}</fieldset>
+  <fieldset><legend class="h3">How you’d like to meet</legend>${radios('format',['In person','Video call','Either'])}</fieldset>
+  <fieldset><legend class="h3">Distance</legend>${radios('distance',['Within 5 miles','Within 10 miles','Within 25 miles'])}</fieldset></div>`;
+}
+
+function homeBody(){
+  return `<div class="switcher" role="tablist" aria-label="Feed"><button role="tab" aria-selected="${S.homeTab==='matches'}" data-act="homeTab" data-arg="matches">Matches</button><button role="tab" aria-selected="${S.homeTab==='circles'}" data-act="homeTab" data-arg="circles">Circles</button></div>`+
+    (S.homeTab==='matches'?matchesFeed():circlesList());
+}
+function pairHTML(m,p){
+  const f=esc(first(m.name));
+  return `<div class="swap-pair" role="group" aria-label="The swap"><div class="side learn"><span class="label">${f} teaches you</span><strong>${esc(p.learn)}</strong></div><div class="mid">${ic('swap')}</div><div class="side teach"><span class="label">You teach ${f}</span><strong>${esc(p.teach)}</strong></div></div>`;
+}
+function matchesFeed(){
+  const ids=[...MATCH_IDS].sort((a,b)=>pairOf(b).score-pairOf(a).score);
+  return `<div class="pad"><h1 class="h1">Today’s matches</h1><p class="lead" style="margin-bottom:8px">Three people picked for what you teach and want to learn. New picks arrive each morning.</p></div>`+
+    ids.map(id=>{const m=PEOPLE[id],p=pairOf(id);return `<article class="card" aria-label="${esc(m.name)}">
+      <button class="card-head" data-act="openMatch" data-arg="${id}">${avatar(m,48)}<span class="who"><strong>${esc(m.name)}</strong><span class="meta">${esc(m.role)}, ${esc(m.dist)}</span></span>${p.strong?tag('Strong match','green'):tag('New skill','gray')}${ic('chev','chev')}</button>
+      ${pairHTML(m,p)}
+      <div class="opener"><span class="label">Conversation starter</span><p>${esc(m.opener)}</p></div>
+      <div class="btn-set"><button class="btn btn-secondary" data-act="openMatch" data-arg="${id}">View profile</button><button class="btn btn-primary" data-act="sayHi" data-arg="${id}">Say hi ${ic('chat')}</button></div></article>`}).join('')+
+    `<div class="caught">${ic('ok')}<div><strong>You’re all caught up</strong><p>A few strong matches a day, so each one gets your full attention.</p></div></div>`;
+}
+function circlesList(){
+  return `<div class="pad"><h1 class="h1">Skill Circles</h1><p class="lead" style="margin-bottom:8px">Small group sessions hosted by people near you.</p></div>`+
+    CIRCLES.map(c=>{const h=PEOPLE[c.host];return `<button class="card circle-card" data-act="openCircle" data-arg="${c.id}"><span class="row-between">${tag(c.skill,'orange')}${S.joinState[c.id]==='joined'?tag('Joined','green'):''}</span><span class="h3">${esc(c.name)}</span><span class="meta">Hosted by ${esc(h.name)}, ${esc(c.spots)}</span><span class="next">${ic('cal')}${c.sessions.length?'Next: '+esc(c.sessions[0].when):'No sessions scheduled yet'}</span></button>`}).join('')+`<div style="height:16px"></div>`;
+}
+function matchBody(){
+  const m=PEOPLE[S.activeMatch],p=pairOf(m.id),f=first(m.name);
+  return `<div class="pad"><div class="person-row" style="margin-top:0">${avatar(m,56)}<div><h1 class="h2">${esc(m.name)}</h1><span class="meta">${esc(m.role)}, ${esc(m.dist)}</span></div></div>
+  <h2 class="section-title">The swap</h2>${pairHTML(m,p)}
+  <p class="hint">${p.strong?`${esc(f)} wants to learn ${esc(p.teach.toLowerCase())}, and teaches ${esc(p.learn.toLowerCase())}, which is on your list.`:`${esc(f)} wants to learn something you teach. ${esc(p.learn)} would be new for you.`}</p>
+  <h2 class="section-title">Teaches</h2><div class="tags">${m.teaches.map(t=>tag(t,'blue')).join('')}</div>
+  <h2 class="section-title">Wants to learn</h2><div class="tags">${m.wants.map(t=>tag(t,'orange')).join('')}</div>
+  <h2 class="section-title">About</h2><p>${esc(m.bio)}</p>
+  <h2 class="section-title">Usually free</h2><p>${esc(m.avail)}</p>
+  <div class="opener"><span class="label">Conversation starter</span><p>${esc(m.opener)}</p><button class="btn btn-ghost inline mt8" data-act="sayHi" data-arg="${m.id}">Use this starter ${ic('chev')}</button></div></div>`;
+}
+function chatHeader(){
+  const m=PEOPLE[S.activeThread],p=pairOf(m.id);
+  return `<header class="hdr back"><button class="icon-btn" data-act="back" aria-label="Back">${ic('back')}</button>${avatar(m,36)}<span class="hdr-title two"><span>${esc(m.name)}</span><span class="meta">${esc(p.learn)} for ${esc(p.teach)}</span></span><button class="icon-btn" data-act="propose" data-arg="${m.id}" aria-label="Propose a swap">${ic('cal')}</button></header>`;
+}
+function chatBody(){
+  const m=PEOPLE[S.activeThread],t=S.threads[m.id]||[],f=esc(first(m.name));
+  if(!t.length){
+    const p=pairOf(m.id),l=p.learn.toLowerCase();
+    S._openers=[m.opener,`Hi ${first(m.name)}! What got you into ${l}?`,`I'd love to learn ${l}. What should a total beginner start with?`].filter(Boolean);
+    return `<div class="chat-empty">${avatar(m,64)}<h1 class="h2">Say hi to ${f}</h1><p class="lead">You could swap ${esc(p.teach.toLowerCase())} for ${esc(l)}. Pick a starter, edit it if you like, then send.</p>${S._openers.map((o,i)=>`<button class="starter" data-act="useOpener" data-arg="${i}">${esc(o)}</button>`).join('')}</div>`;
+  }
+  return `<div class="msgs" aria-live="polite">${t.map(x=>x.type==='sys'
+    ?`<div class="sys">${ic('cal')}<div><strong>${esc(x.title)}</strong><span class="meta">${esc(x.text)}</span></div></div>`
+    :`<div class="bubble ${x.from}"><span class="sr-only">${x.from==='me'?'You':f}: </span>${esc(x.text)}</div><span class="stamp ${x.from}">${esc(x.t)}</span>`).join('')}
+    ${S.typing===m.id?`<span class="meta typing">${f} is typing…</span>`:''}</div>`;
+}
+function messagesBody(){
+  const ids=Object.keys(S.threads).filter(k=>S.threads[k].length);
+  if(!ids.length) return emptyState('No conversations yet','Every match comes with a conversation starter, so you never have to open with “hey.” Say hi to one of today’s matches.','See today’s matches','goMatches');
+  return `<div class="pad" style="padding-bottom:8px"><h1 class="h1">Messages</h1></div><ul class="list">${ids.map(id=>{
+    const p=PEOPLE[id],t=S.threads[id],last=t[t.length-1],u=S.unread[id];
+    const txt=last.type==='sys'?last.title:(last.from==='me'?'You: ':'')+last.text;
+    return `<li><button class="list-row" data-act="openChat" data-arg="${id}">${avatar(p,48)}<span class="who"><strong>${esc(p.name)}</strong><span class="preview">${esc(txt)}</span></span><span class="end"><span class="meta">${esc(last.t||'')}</span>${u?`<span class="dot"></span><span class="sr-only">${u} unread</span>`:''}</span></button></li>`}).join('')}</ul>`;
+}
+function sessionTile(s){
+  if(s.kind==='circle'){const c=CIRCLES.find(x=>x.id===s.circle);
+    return `<article class="tile"><div class="row-between">${tag('Skill Circle','blue')}<span class="meta">${esc(s.when)}</span></div><div><span class="h3">${esc(c.name)}</span><span class="meta">${esc(s.title)}, ${esc(c.where)}</span></div><button class="btn btn-ghost" data-act="openCircle" data-arg="${c.id}">View circle ${ic('chev')}</button></article>`;}
+  const p=PEOPLE[s.partner],f=esc(first(p.name));
+  const tg={request:tag('Request for you','blue'),upcoming:tag('Confirmed','green'),sent:tag('Waiting on '+first(p.name),'orange')}[s.status];
+  const acts=s.status==='request'
+    ?`<div class="btn-set"><button class="btn btn-secondary" data-act="decline" data-arg="${s.id}">Decline</button><button class="btn btn-primary" data-act="accept" data-arg="${s.id}">Accept ${ic('check')}</button></div>`
+    :`<button class="btn btn-ghost" data-act="openChat" data-arg="${p.id}">Message ${f} ${ic('chev')}</button>`;
+  return `<article class="tile"><div class="row-between">${tg}<span class="meta">${esc(s.when)}</span></div><div class="person-row">${avatar(p,40)}<div><strong>${esc(p.name)}</strong><span class="meta">${esc(s.where)}</span></div></div><div class="mini-pair"><span><span class="label">You teach</span>${esc(s.youTeach)}</span>${ic('swap')}<span><span class="label">You learn</span>${esc(s.youLearn)}</span></div>${acts}</article>`;
+}
+function swapsBody(){
+  if(!S.sessions.length) return emptyState('No sessions yet','A session is when you and a match meet to swap skills: you teach something, they teach something back. Propose your first swap from today’s matches.','See today’s matches','goMatches');
+  const g=st=>S.sessions.filter(s=>s.status===st);
+  const sec=(title,list,emptyMsg)=>`<section class="group"><h2 class="group-title">${title}<span class="count">${list.length}</span></h2>${list.length?list.map(sessionTile).join(''):`<p class="inline-empty">${emptyMsg}</p>`}</section>`;
+  const req=g('request'),up=g('upcoming'),sent=g('sent');
+  return `<div class="pad" style="padding-bottom:8px"><h1 class="h1">Swaps</h1><p class="lead" style="margin-bottom:8px">Your sessions and swap requests.</p></div>`+
+    (req.length?sec('Requests for you',req):'')+
+    sec('Upcoming sessions',up,'No upcoming sessions. Accepted swaps and circles you join show up here.')+
+    (sent.length?sec('Sent requests',sent):'');
+}
+function circleBody(){
+  const c=CIRCLES.find(x=>x.id===S.activeCircle),h=PEOPLE[c.host];
+  return `<div class="pad">${tag(c.skill+' group','orange')}<h1 class="h1 mt8">${esc(c.name)}</h1>
+  <div class="person-row">${avatar(h,40)}<div><strong>Hosted by ${esc(h.name)}</strong><span class="meta">${esc(h.role)}</span></div></div>
+  <p>${esc(c.desc)}</p>
+  <ul class="facts"><li>${ic('pin')}${esc(c.where)}</li><li>${ic('group')}${esc(c.spots)}</li></ul>
+  <h2 class="section-title">Upcoming sessions</h2>
+  ${c.sessions.length?`<ul class="sess-list">${c.sessions.map(s=>`<li>${ic('cal')}<div><strong>${esc(s.title)}</strong><span class="meta">${esc(s.when)}</span></div></li>`).join('')}</ul>`
+    :`<div class="empty small">${emptyArt}<span class="h3">No sessions scheduled</span><p class="meta">${esc(first(h.name))} hasn’t picked a time yet. Join now and you’ll get a notification when the first session is added.</p></div>`}</div>`;
+}
+function circleFooter(){
+  const c=CIRCLES.find(x=>x.id===S.activeCircle),st=S.joinState[c.id]||'idle';
+  let n='',b='';
+  if(st==='error') n=`<div class="notif error" role="alert">${ic('warn','n-ic')}<div class="notif-body"><p class="notif-title">Couldn’t join this circle</p><p>The request timed out, so you weren’t added. Check your connection and try again.</p></div><button class="icon-btn" data-act="dismissJoin" aria-label="Dismiss">${ic('close')}</button></div>`;
+  if(st==='joined') n=`<div class="notif success" role="status">${ic('ok','n-ic')}<div class="notif-body"><p class="notif-title">You joined ${esc(c.name)}</p><p>${c.sessions.length?'Your next session is in Swaps.':'You’ll get a notification when the first session is scheduled.'}</p></div></div>`;
+  if(st==='loading') b=`<button class="btn btn-primary" aria-busy="true" aria-disabled="true">Joining… ${spinner}</button>`;
+  else if(st==='joined') b=c.sessions.length?`<button class="btn btn-secondary" data-act="tab" data-arg="swaps">View in Swaps ${ic('chev')}</button>`:`<button class="btn" disabled>Joined ${ic('check')}</button>`;
+  else if(st==='error') b=`<button class="btn btn-primary" data-act="join">Try again ${ic('chev')}</button>`;
+  else b=`<button class="btn btn-primary" data-act="join">Join circle ${ic('plus')}</button>`;
+  return `<div class="footer">${n}${b}</div>`;
+}
+function profileBody(){
+  const u=S.user;
+  return `<div class="banner" aria-hidden="true"></div><div class="pad prof">${avatar({name:u.name,color:'red'},80)}<h1 class="h2">${esc(u.name)}</h1><span class="meta">@${esc(u.handle)}, ${esc(u.location)}</span>${u.bio?`<p>${esc(u.bio)}</p>`:''}
+  <h2 class="section-title">I can teach</h2><div class="tags">${u.teach.map(t=>tag(t,'blue')).join('')}</div>
+  <h2 class="section-title">I want to learn</h2><div class="tags">${u.learn.map(t=>tag(t,'orange')).join('')}</div>
+  <h2 class="section-title">Open to</h2><div class="tags">${u.lookingFor.map(t=>tag(t,'gray')).join('')}</div></div>
+  <div class="stack"><button class="btn btn-tertiary" data-act="editSkills">Edit skills ${ic('chev')}</button><button class="btn btn-ghost" data-act="explainer">How a swap works ${ic('info')}</button><button class="btn btn-ghost" data-act="logout">Log out</button></div>`;
+}
+
+/* ---------- Sheets ---------- */
+const sheetWrap=(title,body,foot)=>`<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t"><div class="sheet-hd"><h2 class="h2" id="sheet-t" tabindex="-1">${title}</h2><button class="icon-btn" data-act="closeSheet" aria-label="Close">${ic('close')}</button></div><div class="sheet-bd">${body}</div>${foot?`<div class="sheet-ft">${foot}</div>`:''}</div></div>`;
+function sheetHTML(){
+  if(!S.sheet) return '';
+  if(S.sheet.type==='explainer'){
+    const u=S.user||{teach:[],learn:[]},t=(u.teach[0]||'photography').toLowerCase(),l=(u.learn[0]||'cooking').toLowerCase();
+    return sheetWrap('How a swap works',`<ol class="steps">
+      <li><span class="step-n n1">1</span><div><strong>You teach</strong><p>Share something you know, like ${esc(t)}.</p></div></li>
+      <li><span class="step-n n2">2</span><div><strong>They teach you back</strong><p>Your match shares something you want to learn, like ${esc(l)}.</p></div></li>
+      <li><span class="step-n n3">3</span><div><strong>You both grow</strong><p>No money changes hands. Agree on a time, meet in person or by video, and swap again whenever you like.</p></div></li></ol>`,
+      `<button class="btn btn-primary" data-act="closeSheet">${S.explainerSeen?'Close':'Got it, show my matches'} ${ic('check')}</button>`);
+  }
+  if(S.sheet.type==='propose'){
+    const pr=S.propose,m=PEOPLE[pr.matchId],f=esc(first(m.name));
+    const radios=(key,opts)=>opts.map(o=>`<label class="choice"><input type="radio" name="p-${key}" data-bind="propose.${key}" value="${esc(o)}" ${pr[key]===o?'checked':''}>${esc(o)}</label>`).join('');
+    return sheetWrap(`Propose a swap with ${f}`,`<p class="lead" style="margin-bottom:16px">${f} can accept, decline or suggest changes in chat.</p>
+      <fieldset><legend class="h3">You’ll teach</legend>${radios('teach',pr.teachOpts)}</fieldset>
+      <fieldset><legend class="h3">You’ll learn</legend>${radios('learn',pr.learnOpts)}</fieldset>
+      <fieldset><legend class="h3">When</legend>${radios('when',['This weekend','Next week','Decide in chat'])}</fieldset>
+      <fieldset style="margin-bottom:0"><legend class="h3">Where</legend>${radios('where',['In person','Video call'])}</fieldset>`,
+      `<div class="btn-set"><button class="btn btn-secondary" data-act="closeSheet">Cancel</button><button class="btn btn-primary" data-act="sendProposal">Send request ${ic('send')}</button></div>`);
+  }
+  return '';
+}
+
+/* ---------- Render ---------- */
+const $app=document.getElementById('app');
+let lastScreen=null;
+function render(){
+  const scr=SCREENS[S.screen];
+  const same=lastScreen===S.screen;
+  const oldMain=document.getElementById('main');
+  const keep=same&&oldMain?oldMain.scrollTop:0;
+  const ae=document.activeElement,aid=same&&ae&&ae.id&&$app.contains(ae)?ae.id:null;
+  const sel=aid&&typeof ae.selectionStart==='number'?[ae.selectionStart,ae.selectionEnd]:null;
+  const hadSheet=!!$app.querySelector('.scrim');
+  $app.innerHTML=(scr.header?scr.header():'')+`<main id="main" class="main" tabindex="-1">${scr.body()}</main>`+(scr.footer?scr.footer():'')+(scr.nav?nav(scr.nav):'')+sheetHTML();
+  const m=document.getElementById('main');
+  m.scrollTop=scr.scrollBottom?m.scrollHeight:keep;
+  if(S.sheet&&!hadSheet){const t=document.getElementById('sheet-t');t&&t.focus({preventScroll:true});}
+  else if(aid){const el=document.getElementById(aid);if(el){el.focus({preventScroll:true});if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
+  else if(!same){const h=m.querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}}
+  lastScreen=S.screen;
+  updateControls();
+}
+function focusEl(sel){requestAnimationFrame(()=>{const el=$app.querySelector(sel);if(el){el.focus();if(el.setSelectionRange&&el.value)el.setSelectionRange(el.value.length,el.value.length);}})}
+function focusInvalid(){requestAnimationFrame(()=>{const el=$app.querySelector('[aria-invalid="true"]');el&&el.focus();})}
+function go(s){S.stack.push(S.screen);S.screen=s;S.errors={};render();}
+function toHome(){S.stack=[];S.screen='home';render();}
+let toastTimer;
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');
+  t.innerHTML=`${ic('ok')}<span>${esc(msg)}</span>`;
+  document.querySelector('.device').appendChild(t);
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.remove(),3200);
+}
+function setPath(path,val){const k=path.split('.');let o=S;while(k.length>1)o=o[k.shift()];o[k[0]]=val;}
+function getPath(path){return path.split('.').reduce((o,k)=>o[k],S);}
+function addTo(kind,v){const n=v.charAt(0).toUpperCase()+v.slice(1);if(!S.setup[kind].some(x=>x.toLowerCase()===n.toLowerCase()))S.setup[kind].push(n);if(S.errors[kind])S.errors[kind]=null;}
+
+/* ---------- Actions ---------- */
+const A={
+  back(){if(S.screen==='chat')S.draft='';if(S.screen==='setup2'&&S.editMode)S.editMode=false;S.errors={};S.screen=S.stack.pop()||(S.user?'home':'welcome');render();},
+  start(){S.authTab='register';go('register');},
+  haveAccount(){S.authTab='login';go('register');},
+  authTab(t){S.authTab=t;S.errors={};render();},
+  togglePw(){S.showPw=!S.showPw;render();},
+  createAccount(){
+    const f=S.form,e={};
+    if(!f.name.trim())e.name='Enter your name.';
+    if(!/^\S+@\S+\.\S+$/.test(f.email.trim()))e.email='Enter an email like you@email.com.';
+    if(f.password.length<8)e.password='Use at least 8 characters.';
+    if(!f.agree)e.agree='Agree to the terms to create an account.';
+    S.errors=e;if(Object.keys(e).length){render();focusInvalid();return;}
+    S.setup.name=f.name.trim();go('setup1');
+  },
+  login(){
+    const f=S.form,e={};
+    if(!f.email.trim())e.email='Enter your email.';
+    if(!f.password)e.password='Enter your password.';
+    S.errors=e;if(Object.keys(e).length){render();focusInvalid();return;}
+    loadSample();toHome();toast('Logged in as '+S.user.name);
+  },
+  demo(){S.form.email='jmoore7000@gmail.com';S.form.password='password123';A.login();},
+  google(){go('setup1');},
+  useLocation(){S.setup.location='Raleigh, NC';if(S.errors.location)S.errors.location=null;render();},
+  next1(){
+    const e={};if(!S.setup.name.trim())e.name='Enter a display name.';if(!S.setup.location.trim())e.location='Enter your city so we can find people nearby.';
+    S.errors=e;if(Object.keys(e).length){render();focusInvalid();return;}go('setup2');
+  },
+  addSkill(kind){const v=(S.skillIn[kind]||'').trim();if(!v){focusEl('#in-'+kind);return;}addTo(kind,v);S.skillIn[kind]='';render();focusEl('#in-'+kind);},
+  addPopular(arg){const [k,v]=arg.split('|');addTo(k,v);render();},
+  removeSkill(arg){const [k,v]=arg.split('|');S.setup[k]=S.setup[k].filter(x=>x!==v);render();toast('Removed '+v);},
+  next2(){
+    ['teach','learn'].forEach(k=>{const v=(S.skillIn[k]||'').trim();if(v){addTo(k,v);S.skillIn[k]='';}});
+    const e={};if(!S.setup.teach.length)e.teach='Add at least one skill you can teach.';if(!S.setup.learn.length)e.learn='Add at least one skill you want to learn.';
+    S.errors=e;if(Object.keys(e).length){render();focusInvalid();return;}
+    if(S.editMode){S.user.teach=[...S.setup.teach];S.user.learn=[...S.setup.learn];S.editMode=false;S.screen=S.stack.pop()||'profile';render();toast('Skills saved');return;}
+    go('setup3');
+  },
+  finish(){
+    if(!S.setup.lookingFor.length){S.errors={lookingFor:'Choose at least one.'};render();return;}
+    const s=S.setup;
+    S.user={name:s.name.trim(),handle:(s.name.trim().split(/\s+/).map((w,i)=>i?w:w[0]).join('')||'you').toLowerCase().replace(/[^a-z0-9]/g,''),location:s.location.trim(),bio:s.bio.trim(),teach:[...s.teach],learn:[...s.learn],lookingFor:[...s.lookingFor],format:s.format,distance:s.distance};
+    S.sessions=[];S.threads={};S.unread={};S.replied={};S.joinState={};S.joinAttempts={};
+    S.homeTab='matches';S.explainerSeen=false;S.sheet={type:'explainer'};toHome();
+  },
+  tab(t){S.stack=[];S.screen=t;S.sheet=null;S.draft='';lastScreen=null;render();},
+  goMatches(){S.homeTab='matches';A.tab('home');},
+  homeTab(t){S.homeTab=t;render();document.getElementById('main').scrollTop=0;},
+  openMatch(id){S.activeMatch=id;go('match');},
+  sayHi(id){S.activeThread=id;S.threads[id]=S.threads[id]||[];S.unread[id]=0;S.draft=PEOPLE[id].opener;go('chat');focusEl('#composer');},
+  openChat(id){S.activeThread=id;S.threads[id]=S.threads[id]||[];S.unread[id]=0;S.draft='';go('chat');},
+  useOpener(i){S.draft=S._openers[+i]||'';render();focusEl('#composer');},
+  send(){
+    const id=S.activeThread,txt=S.draft.trim();if(!txt){focusEl('#composer');return;}
+    S.threads[id].push({from:'me',text:txt,t:'Now'});S.draft='';render();focusEl('#composer');
+    if(S.replied[id])return;S.replied[id]=true;
+    setTimeout(()=>{S.typing=id;if(S.screen==='chat')render();},800);
+    setTimeout(()=>{S.typing=null;S.threads[id].push({from:'them',text:PEOPLE[id].reply,t:'Now'});
+      if(!(S.screen==='chat'&&S.activeThread===id))S.unread[id]=(S.unread[id]||0)+1;render();},2600);
+  },
+  propose(id){
+    const m=PEOPLE[id],u=S.user;
+    const teachOpts=[...u.teach].sort((a,b)=>(m.wants.some(w=>fuzzy(b,w))?1:0)-(m.wants.some(w=>fuzzy(a,w))?1:0));
+    const learnOpts=[...m.teaches].sort((a,b)=>(u.learn.some(l=>fuzzy(b,l))?1:0)-(u.learn.some(l=>fuzzy(a,l))?1:0));
+    S.propose={matchId:id,teachOpts,learnOpts,teach:teachOpts[0],learn:learnOpts[0],when:'This weekend',where:'In person'};
+    S.sheet={type:'propose'};render();
+  },
+  sendProposal(){
+    const p=S.propose,m=PEOPLE[p.matchId];
+    S.sessions.push({id:'s'+Date.now(),partner:m.id,kind:'swap',status:'sent',youTeach:p.teach,youLearn:p.learn,when:p.when,where:p.where});
+    (S.threads[m.id]=S.threads[m.id]||[]).push({type:'sys',title:'Swap request sent',text:`You teach ${p.teach}, you learn ${p.learn}. ${p.when}, ${p.where.toLowerCase()}.`,t:'Now'});
+    S.sheet=null;render();toast('Swap request sent to '+first(m.name));
+  },
+  accept(id){const s=S.sessions.find(x=>x.id===id);s.status='upcoming';render();toast('Swap confirmed with '+first(PEOPLE[s.partner].name));},
+  decline(id){const s=S.sessions.find(x=>x.id===id);S.sessions=S.sessions.filter(x=>x.id!==id);render();toast('Request from '+first(PEOPLE[s.partner].name)+' declined');},
+  openCircle(id){S.activeCircle=id;go('circle');},
+  join(){
+    const id=S.activeCircle,c=CIRCLES.find(x=>x.id===id);
+    if(S.joinState[id]==='loading')return;
+    S.joinAttempts[id]=(S.joinAttempts[id]||0)+1;S.joinState[id]='loading';render();
+    setTimeout(()=>{
+      if(failJoin&&S.joinAttempts[id]===1){S.joinState[id]='error';}
+      else{S.joinState[id]='joined';if(c.sessions.length&&!S.sessions.some(s=>s.circle===id))S.sessions.push({id:'c-'+id,kind:'circle',circle:id,partner:c.host,status:'upcoming',when:c.sessions[0].when,title:c.sessions[0].title});}
+      render();
+    },1400);
+  },
+  dismissJoin(){S.joinState[S.activeCircle]='idle';render();},
+  explainer(){S.sheet={type:'explainer'};render();},
+  closeSheet(){if(S.sheet&&S.sheet.type==='explainer')S.explainerSeen=true;S.sheet=null;render();},
+  scrim(){A.closeSheet();},
+  editSkills(){S.editMode=true;S.setup.teach=[...S.user.teach];S.setup.learn=[...S.user.learn];go('setup2');},
+  logout(){S=init();lastScreen=null;render();},
+  noop(){toast('Not part of this prototype');}
+};
+
+$app.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el||el.getAttribute('aria-disabled')==='true')return;
+  if(el.dataset.act==='scrim'&&e.target!==el)return;
+  if(el.tagName==='A')e.preventDefault();
+  const fn=A[el.dataset.act];fn&&fn(el.dataset.arg,el);
+});
+$app.addEventListener('input',e=>{const b=e.target.dataset.bind;if(b&&e.target.type!=='checkbox'&&e.target.type!=='radio')setPath(b,e.target.value);});
+$app.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.bindArr){const arr=getPath(t.dataset.bindArr);const i=arr.indexOf(t.value);if(t.checked&&i<0)arr.push(t.value);if(!t.checked&&i>=0)arr.splice(i,1);return;}
+  if(t.dataset.bind&&t.type==='checkbox')setPath(t.dataset.bind,t.checked);
+  else if(t.dataset.bind&&t.type==='radio')setPath(t.dataset.bind,t.value);
+});
+$app.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey&&e.target.dataset.enter){e.preventDefault();A[e.target.dataset.enter](e.target.dataset.arg);}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)A.closeSheet();});
+
+/* ---------- Prototype controls ---------- */
+const JUMPS=[['welcome','1. Welcome and swap intro'],['register','2. Create account'],['setup1','3. Setup: profile'],['setup2','4. Setup: skills'],['setup3','5. Setup: preferences'],['home','6. Home: today’s matches'],['match','7. Match profile'],['chat','8. Conversation'],['messages','9. Messages'],['swaps','10. Swaps (sessions)'],['circles','11. Home: Skill Circles'],['circle','12. Circle detail and join'],['profile','13. Your profile']];
+document.getElementById('jumps').innerHTML=JUMPS.map(([k,l])=>`<button class="jump" data-jump="${k}">${l}</button>`).join('');
+function currentKey(){return S.screen==='home'&&S.homeTab==='circles'?'circles':S.screen;}
+function updateControls(){document.querySelectorAll('.jump').forEach(b=>b.classList.toggle('on',b.dataset.jump===currentKey()));document.getElementById('ctl-fail').checked=failJoin;}
+function jump(k){
+  S.sheet=null;S.editMode=false;S.errors={};lastScreen=null;
+  if(['welcome','register','setup1','setup2','setup3'].includes(k)){S.stack=k==='welcome'?[]:k==='register'?['welcome']:['welcome','register'];S.screen=k;render();return;}
+  if(!S.user)loadSample();
+  if(k==='home'){S.homeTab='matches';S.stack=[];S.screen='home';}
+  else if(k==='circles'){S.homeTab='circles';S.stack=[];S.screen='home';}
+  else if(k==='match'){S.stack=['home'];S.screen='match';}
+  else if(k==='chat'){S.stack=['messages'];S.threads[S.activeThread]=S.threads[S.activeThread]||[];S.unread[S.activeThread]=0;S.screen='chat';}
+  else if(k==='circle'){S.homeTab='circles';S.stack=['home'];S.screen='circle';}
+  else{S.stack=[];S.screen=k;}
+  render();
+}
+document.querySelector('.controls').addEventListener('click',e=>{
+  const j=e.target.closest('[data-jump]');if(j){jump(j.dataset.jump);return;}
+  const c=e.target.closest('[data-ctl]');if(!c)return;
+  if(c.dataset.ctl==='empty'){if(!S.user)loadSample();S.sessions=[];S.joinState={};S.joinAttempts={};jump('swaps');}
+  if(c.dataset.ctl==='sample'){loadSample();S.joinState={};S.joinAttempts={};jump('home');toast('Sample data loaded');}
+  if(c.dataset.ctl==='reset'){S=init();lastScreen=null;render();}
+});
+document.getElementById('ctl-fail').addEventListener('change',e=>{failJoin=e.target.checked;S.joinAttempts={};});
+
+render();
+</script>
+</body>
+</html>
