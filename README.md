@@ -61,3 +61,16 @@ Requirements: Include an empty state for no sessions and an error state if joini
 - Replaced Claude's dark theme with a light theme to match my Figma (Prompt 2).
 
 ## Hand edits
+
+Made directly in the code after Claude's output, one commit per change:
+
+- Changed Jamal Kay's skill from Spanish to Coding to match my Figma, including his entry on the Swaps tab.
+- Fixed typos: "may" to "many" in Jamal's bio, and "amd" to "and" in the Coding circle description.
+- Capitalized "Coding" in the Coding circle to match the other skills.
+- Relabeled the conversation starters "Suggested by AI" on the home cards and the match profile, so users know the text is AI-generated. In this prototype the suggestions are simulated, not generated live.
+
+## Notes for visitors
+
+- The panel next to the phone lets you jump between screens and force states, like the empty Swaps view.
+- The first attempt to join a Skill Circle fails on purpose, to show the error state. A second attempt succeeds.
+- Matching, replies, and AI suggestions are all simulated with pre-written text.
