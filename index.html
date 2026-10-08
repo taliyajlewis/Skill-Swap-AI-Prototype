@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Skill Swap: clickable prototype</title>
+<title>Skill Swap</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -385,10 +385,10 @@ const PEOPLE={
     bio:"I've made homemade pasta for my family and friends for years and would love to share my techniques. If anyone knows photography, let's swap.",
     opener:"Hi Madison! What dish would you teach first? I could show you how to light food so your pasta looks as good on camera as it tastes.",
     avail:'Weekend mornings',reply:"Yes! Saturday morning works. Bring your camera, we're making tagliatelle."},
-  jamal:{id:'jamal',name:'Jamal Kay',initials:'JK',color:'orange',role:'Software engineer',dist:'3 mi away',teaches:['Spanish','Coding'],wants:['Sports photography'],
-    bio:"I shoot my rec league games on my phone and want to level up. Fluent in Spanish and happy to practice with beginners.",
-    opener:"Hi Jamal! What sport do you shoot most? I can share settings for fast action, and I'd love to practice my Spanish.",
-    avail:'Tuesday evenings',reply:"Love that. Tuesday evenings work best for me. ¡Gracias!"},
+  jamal:{id:'jamal',name:'Jamal Kay',initials:'JK',color:'orange',role:'Software Engineer',dist:'3 mi away',teaches:['Coding'],wants:['Sports photography'],
+    bio:"I shoot my rec league games on my phone and want to level up. I am fluent in many programming languages, happy to practice with beginners.",
+    opener:"Hi Jamal! What sport do you shoot most? I can share settings for fast action, and I'd love to practice my coding.",
+    avail:'Tuesday evenings',reply:"Love that. Tuesday evenings work best for me. Thanks!"},
   harper:{id:'harper',name:'Harper Allen',initials:'HA',color:'green',role:'Web developer',dist:'2.3 mi away',teaches:['Web development','HTML and CSS'],wants:['Videography','Graphic design'],
     bio:"I've been a web developer for 6 years and love helping people get started. I've always wanted to make proper videos for my projects.",
     opener:"Hi Harper! What kind of videos do you want to make? I'm curious how you got into web development, too.",
@@ -401,8 +401,8 @@ const CIRCLES=[
   {id:'pasta',name:'Pasta Making Group Session',host:'madison',skill:'Cooking',where:"Madison's kitchen, Raleigh",spots:'3 of 6 spots filled',
    desc:"I've made homemade pasta for years and would love to host a small group in my test kitchen. We'll cover dough, shapes and two simple sauces.",
    sessions:[{when:'Tomorrow, 4:30 PM',title:'Fresh pasta basics'},{when:'Sat, Oct 17, 4:30 PM',title:'Filled pasta: ravioli'}]},
-  {id:'spanish',name:'Beginner Spanish Circle',host:'jamal',skill:'Spanish',where:'Video call',spots:'2 of 8 spots filled',
-   desc:"Casual conversation practice for total beginners. We'll pick a regular time once a few more people join.",sessions:[]}
+  {id:'coding',name:'coding',host:'jamal',skill:'Coding',where:'Video call',spots:'2 of 8 spots filled',
+   desc:"HTML and CSS practice for beginners. We'll pick a regular time once a few more people join.",sessions:[]}
 ];
 const POPULAR={teach:['Photography','Videography','Cooking','Guitar','Coding','Spanish'],learn:['Cooking','Spanish','Piano','French','Photography','Coding']};
 
@@ -434,7 +434,7 @@ function loadSample(){
   S.sessions=[
     {id:'s1',partner:'madison',kind:'swap',status:'upcoming',youTeach:'Photography',youLearn:'Cooking',when:'Today, 3:30 PM',where:"Madison's kitchen"},
     {id:'s2',partner:'alexia',kind:'swap',status:'request',youTeach:'Video editing',youLearn:'Cooking',when:'Sat, 11:00 AM',where:'Video call'},
-    {id:'s3',partner:'jamal',kind:'swap',status:'sent',youTeach:'Photography',youLearn:'Spanish',when:'Next week',where:'In person'}
+    {id:'s3',partner:'jamal',kind:'swap',status:'sent',youTeach:'Photography',youLearn:'Coding',when:'Next week',where:'In person'}
   ];
   S.threads={
     madison:[{from:'them',text:'Hey! When would you like to have our first session?',t:'10:42 AM'}],
