@@ -557,7 +557,7 @@ function matchesFeed(){
     ids.map(id=>{const m=PEOPLE[id],p=pairOf(id);return `<article class="card" aria-label="${esc(m.name)}">
       <button class="card-head" data-act="openMatch" data-arg="${id}">${avatar(m,48)}<span class="who"><strong>${esc(m.name)}</strong><span class="meta">${esc(m.role)}, ${esc(m.dist)}</span></span>${p.strong?tag('Strong match','green'):tag('New skill','gray')}${ic('chev','chev')}</button>
       ${pairHTML(m,p)}
-      <div class="opener"><span class="label">Conversation starter</span><p>${esc(m.opener)}</p></div>
+      <div class="opener"><span class="label">Suggested by AI</span><p>${esc(m.opener)}</p></div>
       <div class="btn-set"><button class="btn btn-secondary" data-act="openMatch" data-arg="${id}">View profile</button><button class="btn btn-primary" data-act="sayHi" data-arg="${id}">Say hi ${ic('chat')}</button></div></article>`}).join('')+
     `<div class="caught">${ic('ok')}<div><strong>You’re all caught up</strong><p>A few strong matches a day, so each one gets your full attention.</p></div></div>`;
 }
@@ -574,7 +574,7 @@ function matchBody(){
   <h2 class="section-title">Wants to learn</h2><div class="tags">${m.wants.map(t=>tag(t,'orange')).join('')}</div>
   <h2 class="section-title">About</h2><p>${esc(m.bio)}</p>
   <h2 class="section-title">Usually free</h2><p>${esc(m.avail)}</p>
-  <div class="opener"><span class="label">Conversation starter</span><p>${esc(m.opener)}</p><button class="btn btn-ghost inline mt8" data-act="sayHi" data-arg="${m.id}">Use this starter ${ic('chev')}</button></div></div>`;
+  <div class="opener"><span class="label">Suggested by AI</span><p>${esc(m.opener)}</p><button class="btn btn-ghost inline mt8" data-act="sayHi" data-arg="${m.id}">Use this starter ${ic('chev')}</button></div></div>`;
 }
 function chatHeader(){
   const m=PEOPLE[S.activeThread],p=pairOf(m.id);
